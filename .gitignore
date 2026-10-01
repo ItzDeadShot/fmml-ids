@@ -1,0 +1,10 @@
+data/*
+!data/README.md
+runs/
+.venv/
+__pycache__/
+*.egg-info/
+.DS_Store
+wandb/
+.done_*
+.running

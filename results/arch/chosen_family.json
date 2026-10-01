@@ -1,0 +1,55 @@
+{
+  "family": "ft_transformer",
+  "leader": "ft_transformer",
+  "rule": "The family for all datasets, by a rule fixed before the re-check was run:\n      m(f, s) = mean over datasets of the validation MCC of family f's configuration with seed s\n      (seed 0 from the search, seeds 1-3 from the re-check); M(f), SD(f) = mean and standard\n      deviation of m(f, s) over the seeds. Leader = highest M. Tied = every family with\n      M(f) >= M(leader) - SD(leader). Among the tied, the cheapest to train (sum over datasets of\n      the mean seconds per epoch, measured with the GPU to itself) is chosen.\n    Writes results/arch/chosen_family.json and recheck_summary.csv.",
+  "datasets": {
+    "UNSW-NB15": {
+      "family": "ft_transformer",
+      "params": {
+        "learning_rate": 0.0003,
+        "batch_size": 512,
+        "d_token": 32,
+        "blocks": 2,
+        "heads": 4,
+        "dropout": 0.0
+      },
+      "val_mcc_seed0": 0.9994642093763692
+    },
+    "BoT-IoT": {
+      "family": "ft_transformer",
+      "params": {
+        "learning_rate": 0.001,
+        "batch_size": 1024,
+        "d_token": 32,
+        "blocks": 1,
+        "heads": 4,
+        "dropout": 0.0
+      },
+      "val_mcc_seed0": 0.9908803473384744
+    },
+    "ToN-IoT": {
+      "family": "ft_transformer",
+      "params": {
+        "learning_rate": 0.001,
+        "batch_size": 1024,
+        "d_token": 32,
+        "blocks": 1,
+        "heads": 4,
+        "dropout": 0.0
+      },
+      "val_mcc_seed0": 0.3911303388094617
+    },
+    "CIC-2018": {
+      "family": "ft_transformer",
+      "params": {
+        "learning_rate": 0.001,
+        "batch_size": 1024,
+        "d_token": 64,
+        "blocks": 3,
+        "heads": 4,
+        "dropout": 0.0
+      },
+      "val_mcc_seed0": 0.8655754060155061
+    }
+  }
+}

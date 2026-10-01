@@ -1,0 +1,152 @@
+[
+  {
+    "client": 0,
+    "flows": 21896,
+    "train": 17558,
+    "val": 4338,
+    "attack_share": 0.9379,
+    "attack_types": 4,
+    "types": {
+      "DDoS": 9146,
+      "DoS": 8822,
+      "Reconnaissance": 2527,
+      "Benign": 1360,
+      "Theft": 41
+    }
+  },
+  {
+    "client": 1,
+    "flows": 21896,
+    "train": 17597,
+    "val": 4299,
+    "attack_share": 0.9382,
+    "attack_types": 4,
+    "types": {
+      "DDoS": 9025,
+      "DoS": 8986,
+      "Reconnaissance": 2499,
+      "Benign": 1353,
+      "Theft": 33
+    }
+  },
+  {
+    "client": 2,
+    "flows": 21896,
+    "train": 17442,
+    "val": 4454,
+    "attack_share": 0.9392,
+    "attack_types": 4,
+    "types": {
+      "DoS": 9131,
+      "DDoS": 8895,
+      "Reconnaissance": 2504,
+      "Benign": 1331,
+      "Theft": 35
+    }
+  },
+  {
+    "client": 3,
+    "flows": 21895,
+    "train": 17546,
+    "val": 4349,
+    "attack_share": 0.9388,
+    "attack_types": 4,
+    "types": {
+      "DDoS": 8991,
+      "DoS": 8965,
+      "Reconnaissance": 2554,
+      "Benign": 1339,
+      "Theft": 46
+    }
+  },
+  {
+    "client": 4,
+    "flows": 21895,
+    "train": 17521,
+    "val": 4374,
+    "attack_share": 0.9372,
+    "attack_types": 4,
+    "types": {
+      "DDoS": 9047,
+      "DoS": 8875,
+      "Reconnaissance": 2555,
+      "Benign": 1375,
+      "Theft": 43
+    }
+  },
+  {
+    "client": 5,
+    "flows": 21895,
+    "train": 17491,
+    "val": 4404,
+    "attack_share": 0.9386,
+    "attack_types": 4,
+    "types": {
+      "DoS": 9029,
+      "DDoS": 8960,
+      "Reconnaissance": 2522,
+      "Benign": 1344,
+      "Theft": 40
+    }
+  },
+  {
+    "client": 6,
+    "flows": 21895,
+    "train": 17507,
+    "val": 4388,
+    "attack_share": 0.94,
+    "attack_types": 4,
+    "types": {
+      "DoS": 9110,
+      "DDoS": 8955,
+      "Reconnaissance": 2484,
+      "Benign": 1313,
+      "Theft": 33
+    }
+  },
+  {
+    "client": 7,
+    "flows": 21895,
+    "train": 17526,
+    "val": 4369,
+    "attack_share": 0.9371,
+    "attack_types": 4,
+    "types": {
+      "DDoS": 9017,
+      "DoS": 9009,
+      "Reconnaissance": 2463,
+      "Benign": 1377,
+      "Theft": 29
+    }
+  },
+  {
+    "client": 8,
+    "flows": 21895,
+    "train": 17500,
+    "val": 4395,
+    "attack_share": 0.9403,
+    "attack_types": 4,
+    "types": {
+      "DDoS": 9034,
+      "DoS": 8998,
+      "Reconnaissance": 2509,
+      "Benign": 1308,
+      "Theft": 46
+    }
+  },
+  {
+    "client": 9,
+    "flows": 21895,
+    "train": 17474,
+    "val": 4421,
+    "attack_share": 0.9379,
+    "attack_types": 4,
+    "types": {
+      "DoS": 9075,
+      "DDoS": 8930,
+      "Reconnaissance": 2476,
+      "Benign": 1360,
+      "Theft": 54
+    }
+  }
+]

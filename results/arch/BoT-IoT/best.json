@@ -1,0 +1,14 @@
+{
+  "family": "ft_transformer",
+  "params": {
+    "learning_rate": 0.001,
+    "batch_size": 1024,
+    "d_token": 32,
+    "blocks": 1,
+    "heads": 4,
+    "dropout": 0.0
+  },
+  "val_mcc": 0.9908803473384744,
+  "best_epoch": 10,
+  "trials": 42
+}

@@ -1,0 +1,13 @@
+client,attack,flows,predicted_attack
+-1,Benign,49608,0.0015521690049991937
+-1,Bot,280,1.0
+-1,Brute_Force_-Web,60,0.85
+-1,DDOS_attack-HOIC,10000,1.0
+-1,DDOS_attack-LOIC-UDP,172,1.0
+-1,DDoS_attacks-LOIC-HTTP,10000,1.0
+-1,DoS_attacks-GoldenEye,2741,1.0
+-1,DoS_attacks-Hulk,10000,1.0
+-1,DoS_attacks-Slowloris,351,1.0
+-1,Infilteration,7381,0.11881858826717247
+-1,SQL_Injection,9,1.0
+-1,SSH-Bruteforce,9398,1.0

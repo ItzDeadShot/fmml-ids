@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fmml"
+version = "0.1.0"
+description = "Federated learning of NetFlow v3 intrusion detectors under non-IID client data"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]

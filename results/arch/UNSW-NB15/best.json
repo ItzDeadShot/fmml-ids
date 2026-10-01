@@ -1,0 +1,14 @@
+{
+  "family": "dcn",
+  "params": {
+    "learning_rate": 0.0003,
+    "batch_size": 256,
+    "cross_layers": 3,
+    "deep_layers": 2,
+    "width": 128,
+    "dropout": 0.1
+  },
+  "val_mcc": 0.999716283572343,
+  "best_epoch": 14,
+  "trials": 42
+}

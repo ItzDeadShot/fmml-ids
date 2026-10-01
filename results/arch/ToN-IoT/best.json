@@ -1,0 +1,14 @@
+{
+  "family": "cnn1d",
+  "params": {
+    "learning_rate": 0.003,
+    "batch_size": 1024,
+    "conv_layers": 3,
+    "filters": 32,
+    "kernel": 5,
+    "dense": 128
+  },
+  "val_mcc": 0.3968718433949999,
+  "best_epoch": 1,
+  "trials": 42
+}

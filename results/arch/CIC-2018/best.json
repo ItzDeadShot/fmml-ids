@@ -1,0 +1,13 @@
+{
+  "family": "mlp",
+  "params": {
+    "learning_rate": 0.001,
+    "batch_size": 1024,
+    "depth": 2,
+    "width": 256,
+    "dropout": 0.2
+  },
+  "val_mcc": 0.8688308072024288,
+  "best_epoch": 9,
+  "trials": 42
+}

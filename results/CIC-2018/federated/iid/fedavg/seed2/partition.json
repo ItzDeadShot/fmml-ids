@@ -1,0 +1,222 @@
+[
+  {
+    "client": 0,
+    "flows": 90000,
+    "train": 71809,
+    "val": 18191,
+    "attack_share": 0.5046,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44585,
+      "DoS_attacks-Hulk": 9060,
+      "DDoS_attacks-LOIC-HTTP": 9001,
+      "DDOS_attack-HOIC": 8959,
+      "SSH-Bruteforce": 8624,
+      "Infilteration": 6598,
+      "DoS_attacks-GoldenEye": 2391,
+      "DoS_attacks-Slowloris": 303,
+      "Bot": 252,
+      "DDOS_attack-LOIC-UDP": 162,
+      "Brute_Force_-Web": 57,
+      "SQL_Injection": 8
+    }
+  },
+  {
+    "client": 1,
+    "flows": 90000,
+    "train": 72002,
+    "val": 17998,
+    "attack_share": 0.5044,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44603,
+      "DDOS_attack-HOIC": 9143,
+      "DoS_attacks-Hulk": 9006,
+      "DDoS_attacks-LOIC-HTTP": 8906,
+      "SSH-Bruteforce": 8485,
+      "Infilteration": 6586,
+      "DoS_attacks-GoldenEye": 2460,
+      "DoS_attacks-Slowloris": 343,
+      "Bot": 249,
+      "DDOS_attack-LOIC-UDP": 146,
+      "Brute_Force_-Web": 60,
+      "SQL_Injection": 13
+    }
+  },
+  {
+    "client": 2,
+    "flows": 90000,
+    "train": 71998,
+    "val": 18002,
+    "attack_share": 0.5045,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44594,
+      "DoS_attacks-Hulk": 9083,
+      "DDoS_attacks-LOIC-HTTP": 9048,
+      "DDOS_attack-HOIC": 8989,
+      "SSH-Bruteforce": 8375,
+      "Infilteration": 6604,
+      "DoS_attacks-GoldenEye": 2549,
+      "DoS_attacks-Slowloris": 298,
+      "Bot": 256,
+      "DDOS_attack-LOIC-UDP": 139,
+      "Brute_Force_-Web": 58,
+      "SQL_Injection": 7
+    }
+  },
+  {
+    "client": 3,
+    "flows": 90000,
+    "train": 71841,
+    "val": 18159,
+    "attack_share": 0.5046,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44587,
+      "DDoS_attacks-LOIC-HTTP": 9042,
+      "DDOS_attack-HOIC": 9041,
+      "DoS_attacks-Hulk": 8918,
+      "SSH-Bruteforce": 8425,
+      "Infilteration": 6769,
+      "DoS_attacks-GoldenEye": 2452,
+      "DoS_attacks-Slowloris": 308,
+      "Bot": 247,
+      "DDOS_attack-LOIC-UDP": 160,
+      "Brute_Force_-Web": 42,
+      "SQL_Injection": 9
+    }
+  },
+  {
+    "client": 4,
+    "flows": 90000,
+    "train": 72171,
+    "val": 17829,
+    "attack_share": 0.5047,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44578,
+      "DoS_attacks-Hulk": 9041,
+      "DDoS_attacks-LOIC-HTTP": 8993,
+      "DDOS_attack-HOIC": 8926,
+      "SSH-Bruteforce": 8506,
+      "Infilteration": 6665,
+      "DoS_attacks-GoldenEye": 2502,
+      "DoS_attacks-Slowloris": 320,
+      "Bot": 262,
+      "DDOS_attack-LOIC-UDP": 150,
+      "Brute_Force_-Web": 50,
+      "SQL_Injection": 7
+    }
+  },
+  {
+    "client": 5,
+    "flows": 90000,
+    "train": 71989,
+    "val": 18011,
+    "attack_share": 0.5016,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44854,
+      "DDOS_attack-HOIC": 9069,
+      "DDoS_attacks-LOIC-HTTP": 9001,
+      "DoS_attacks-Hulk": 8945,
+      "SSH-Bruteforce": 8367,
+      "Infilteration": 6590,
+      "DoS_attacks-GoldenEye": 2398,
+      "DoS_attacks-Slowloris": 312,
+      "Bot": 246,
+      "DDOS_attack-LOIC-UDP": 153,
+      "Brute_Force_-Web": 54,
+      "SQL_Injection": 11
+    }
+  },
+  {
+    "client": 6,
+    "flows": 90000,
+    "train": 71987,
+    "val": 18013,
+    "attack_share": 0.5028,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44747,
+      "DDoS_attacks-LOIC-HTTP": 9029,
+      "DoS_attacks-Hulk": 8984,
+      "DDOS_attack-HOIC": 8828,
+      "SSH-Bruteforce": 8457,
+      "Infilteration": 6740,
+      "DoS_attacks-GoldenEye": 2433,
+      "DoS_attacks-Slowloris": 324,
+      "Bot": 232,
+      "DDOS_attack-LOIC-UDP": 164,
+      "Brute_Force_-Web": 53,
+      "SQL_Injection": 9
+    }
+  },
+  {
+    "client": 7,
+    "flows": 90000,
+    "train": 72119,
+    "val": 17881,
+    "attack_share": 0.5033,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44705,
+      "DDoS_attacks-LOIC-HTTP": 9035,
+      "DoS_attacks-Hulk": 8994,
+      "DDOS_attack-HOIC": 8992,
+      "SSH-Bruteforce": 8375,
+      "Infilteration": 6639,
+      "DoS_attacks-GoldenEye": 2489,
+      "DoS_attacks-Slowloris": 306,
+      "Bot": 243,
+      "DDOS_attack-LOIC-UDP": 169,
+      "Brute_Force_-Web": 49,
+      "SQL_Injection": 4
+    }
+  },
+  {
+    "client": 8,
+    "flows": 90000,
+    "train": 72180,
+    "val": 17820,
+    "attack_share": 0.5038,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44657,
+      "DoS_attacks-Hulk": 9050,
+      "DDoS_attacks-LOIC-HTTP": 9005,
+      "DDOS_attack-HOIC": 8950,
+      "SSH-Bruteforce": 8558,
+      "Infilteration": 6498,
+      "DoS_attacks-GoldenEye": 2489,
+      "DoS_attacks-Slowloris": 310,
+      "Bot": 268,
+      "DDOS_attack-LOIC-UDP": 154,
+      "Brute_Force_-Web": 55,
+      "SQL_Injection": 6
+    }
+  },
+  {
+    "client": 9,
+    "flows": 90000,
+    "train": 71904,
+    "val": 18096,
+    "attack_share": 0.5049,
+    "attack_types": 11,
+    "types": {
+      "Benign": 44563,
+      "DDOS_attack-HOIC": 9103,
+      "DDoS_attacks-LOIC-HTTP": 8940,
+      "DoS_attacks-Hulk": 8919,
+      "SSH-Bruteforce": 8409,
+      "Infilteration": 6736,
+      "DoS_attacks-GoldenEye": 2506,
+      "DoS_attacks-Slowloris": 335,
+      "Bot": 269,
+      "DDOS_attack-LOIC-UDP": 154,
+      "Brute_Force_-Web": 58,
+      "SQL_Injection": 8
+    }
+  }
+]

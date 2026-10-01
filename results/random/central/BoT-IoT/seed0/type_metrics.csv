@@ -1,0 +1,6 @@
+client,attack,flows,predicted_attack
+-1,Benign,1496,0.026737967914438502
+-1,DDoS,10000,1.0
+-1,DoS,10000,1.0
+-1,Reconnaissance,2788,0.9989239598278336
+-1,Theft,45,0.9555555555555556

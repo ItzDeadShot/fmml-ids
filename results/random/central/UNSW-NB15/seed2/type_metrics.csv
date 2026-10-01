@@ -1,0 +1,11 @@
+client,attack,flows,predicted_attack
+-1,Analysis,123,1.0
+-1,Backdoor,362,1.0
+-1,Benign,90237,0.00016622893048306127
+-1,DoS,528,0.9962121212121212
+-1,Exploits,3999,0.9994998749687422
+-1,Fuzzers,2663,1.0
+-1,Generic,739,1.0
+-1,Reconnaissance,1169,1.0
+-1,Shellcode,166,1.0
+-1,Worms,14,1.0
