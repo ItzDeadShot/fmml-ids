@@ -1,0 +1,201 @@
+[
+  {
+    "client": 0,
+    "flows": 20112,
+    "train": 16090,
+    "val": 4022,
+    "attack_share": 0.3845,
+    "attack_types": 9,
+    "types": {
+      "Benign": 12379,
+      "Exploits": 4956,
+      "Generic": 1486,
+      "Reconnaissance": 527,
+      "DoS": 308,
+      "Backdoor": 162,
+      "Fuzzers": 141,
+      "Analysis": 122,
+      "Worms": 22,
+      "Shellcode": 9
+    }
+  },
+  {
+    "client": 1,
+    "flows": 61579,
+    "train": 49270,
+    "val": 12309,
+    "attack_share": 0.2356,
+    "attack_types": 9,
+    "types": {
+      "Benign": 47074,
+      "Fuzzers": 7214,
+      "Exploits": 6532,
+      "DoS": 316,
+      "Reconnaissance": 165,
+      "Generic": 143,
+      "Backdoor": 78,
+      "Analysis": 37,
+      "Shellcode": 11,
+      "Worms": 9
+    }
+  },
+  {
+    "client": 2,
+    "flows": 74510,
+    "train": 59662,
+    "val": 14848,
+    "attack_share": 0.0682,
+    "attack_types": 9,
+    "types": {
+      "Benign": 69426,
+      "Generic": 1258,
+      "Exploits": 1224,
+      "Fuzzers": 1041,
+      "Reconnaissance": 717,
+      "Backdoor": 382,
+      "Shellcode": 274,
+      "DoS": 98,
+      "Analysis": 88,
+      "Worms": 2
+    }
+  },
+  {
+    "client": 3,
+    "flows": 46133,
+    "train": 36760,
+    "val": 9373,
+    "attack_share": 0.2689,
+    "attack_types": 8,
+    "types": {
+      "Benign": 33726,
+      "Exploits": 6117,
+      "Reconnaissance": 3225,
+      "Fuzzers": 2012,
+      "Backdoor": 603,
+      "DoS": 398,
+      "Analysis": 27,
+      "Shellcode": 15,
+      "Generic": 10
+    }
+  },
+  {
+    "client": 4,
+    "flows": 219630,
+    "train": 175562,
+    "val": 44068,
+    "attack_share": 0.0601,
+    "attack_types": 9,
+    "types": {
+      "Benign": 206436,
+      "Fuzzers": 9700,
+      "Exploits": 2495,
+      "Analysis": 293,
+      "Reconnaissance": 272,
+      "Shellcode": 269,
+      "DoS": 77,
+      "Backdoor": 54,
+      "Worms": 23,
+      "Generic": 11
+    }
+  },
+  {
+    "client": 5,
+    "flows": 107000,
+    "train": 86018,
+    "val": 20982,
+    "attack_share": 0.0642,
+    "attack_types": 9,
+    "types": {
+      "Benign": 100126,
+      "Reconnaissance": 2657,
+      "Generic": 1691,
+      "DoS": 641,
+      "Backdoor": 610,
+      "Fuzzers": 564,
+      "Exploits": 478,
+      "Analysis": 200,
+      "Shellcode": 21,
+      "Worms": 12
+    }
+  },
+  {
+    "client": 6,
+    "flows": 8913,
+    "train": 7165,
+    "val": 1748,
+    "attack_share": 0.3728,
+    "attack_types": 9,
+    "types": {
+      "Benign": 5590,
+      "Fuzzers": 1018,
+      "Exploits": 961,
+      "DoS": 772,
+      "Backdoor": 349,
+      "Analysis": 113,
+      "Generic": 46,
+      "Shellcode": 28,
+      "Worms": 21,
+      "Reconnaissance": 15
+    }
+  },
+  {
+    "client": 7,
+    "flows": 93063,
+    "train": 74354,
+    "val": 18709,
+    "attack_share": 0.0539,
+    "attack_types": 9,
+    "types": {
+      "Benign": 88049,
+      "DoS": 1643,
+      "Generic": 1108,
+      "Fuzzers": 810,
+      "Exploits": 666,
+      "Shellcode": 260,
+      "Backdoor": 204,
+      "Reconnaissance": 175,
+      "Analysis": 132,
+      "Worms": 16
+    }
+  },
+  {
+    "client": 8,
+    "flows": 67110,
+    "train": 53691,
+    "val": 13419,
+    "attack_share": 0.0913,
+    "attack_types": 9,
+    "types": {
+      "Benign": 60986,
+      "Exploits": 3374,
+      "Reconnaissance": 1341,
+      "Fuzzers": 497,
+      "DoS": 350,
+      "Backdoor": 349,
+      "Shellcode": 122,
+      "Generic": 54,
+      "Analysis": 22,
+      "Worms": 15
+    }
+  },
+  {
+    "client": 9,
+    "flows": 201951,
+    "train": 161428,
+    "val": 40523,
+    "attack_share": 0.0674,
+    "attack_types": 9,
+    "types": {
+      "Benign": 188344,
+      "Exploits": 9191,
+      "Reconnaissance": 1425,
+      "Fuzzers": 968,
+      "Generic": 848,
+      "Shellcode": 487,
+      "Backdoor": 464,
+      "DoS": 150,
+      "Analysis": 70,
+      "Worms": 4
+    }
+  }
+]
