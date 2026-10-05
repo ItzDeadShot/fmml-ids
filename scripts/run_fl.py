@@ -8,7 +8,9 @@ For each dataset:
      later in time than its training data. Each client fits a QuantileTransformer on its own
      training data; with --scaler local each client keeps its own, with --scaler federated they
      are merged into one common scaler from the clients' quantiles (fmml.data.merge_quantile_scalers).
-  2. Train the dataset's model with Flower (FedAvg or FedProx) for --rounds rounds of
+     References: --scaler pooled (one QuantileTransformer fit on all clients' training flows, not
+     deployable) and zscore-local / zscore-federated (StandardScaler, the federated one exact).
+  2. Train the dataset's model with Flower (FedAvg, FedProx or SCAFFOLD) for --rounds rounds of
      --local-epochs local epochs each.
   3. Choose the round with the highest validation MCC, from the clients' pooled confusion counts
      (validation loss is not used: under the drift between the time-ordered splits it favours the
@@ -17,7 +19,7 @@ For each dataset:
      the client's own scaler); report every client, the mean and the worst.
 
 Writes results/<dataset>/<scaler>/<partition>/<strategy>/seed<N>/ (partition.json, history.csv,
-test_metrics.csv, client_updates.csv, summary.json), with <strategy> fedavg or fedprox-mu<mu>, and
+test_metrics.csv, client_updates.csv, summary.json), with <strategy> fedavg, fedprox-mu<mu> or scaffold, and
 the chosen global model to runs/models/.
 client_updates.csv holds each client's per-round update norm and cosine similarity to the mean
 update: the benign reference for later attack and defence experiments.
@@ -35,7 +37,7 @@ import pandas as pd
 
 import fmml.architectures  # noqa: F401  (registers custom layers for saved models)
 from fmml import config, tracking
-from fmml.data import load_scaler, load_xy, prepare_clients
+from fmml.data import SCALERS, load_scaler, load_xy, prepare_clients, shares_scaler
 from fmml.fl import run_federation
 from fmml.metrics import binary_metrics
 
@@ -57,7 +59,7 @@ def run(dataset, args):
     from fmml.models import build_model
 
     tag = "iid" if args.partition == "iid" else f"dirichlet-a{args.alpha:g}"
-    strategy = args.strategy if args.strategy == "fedavg" else f"fedprox-mu{args.mu:g}"
+    strategy = f"fedprox-mu{args.mu:g}" if args.strategy == "fedprox" else args.strategy
     if args.refit:                                   # retrain with the main study's chosen number of rounds
         assert config.EXPERIMENT == "refit", "run --refit with FMML_EXPERIMENT=refit"
         reference = json.loads((config.MAIN_RESULTS_DIR / dataset / args.scaler / tag / strategy
@@ -111,7 +113,7 @@ def _run(dataset, args, tag, strategy, client_dir, out):
     best_round = args.rounds if args.refit else int(val.idxmax())
     X_test, y_test = load_xy(config.split_path(dataset, "test"))
     scalers = [load_scaler(client_dir, k) for k in range(args.clients)]
-    X_clients = [scalers[0].transform(X_test)] * args.clients if args.scaler == "federated" \
+    X_clients = [scalers[0].transform(X_test)] * args.clients if shares_scaler(args.scaler) \
         else [s.transform(X_test) for s in scalers]
     model = build_model(dataset)
 
@@ -147,9 +149,9 @@ def _run(dataset, args, tag, strategy, client_dir, out):
                "simulation_seconds": float(ends.iloc[-1] - record["start"]),
                "round_seconds_median": float(round_seconds.iloc[1:].median()),            # round 1 includes start-up
                "client_fit_seconds_mean": float(pd.DataFrame(record["updates"]).fit_seconds.mean()),
-               "model_bytes": record["model_bytes"],
-               # every round each client downloads and uploads one copy of the weights
-               "communication_bytes_total": 2 * record["model_bytes"] * args.clients * args.rounds,
+               "model_bytes": record["model_bytes"], "control_bytes": record["control_bytes"],
+               # every round each client downloads and uploads one copy of the weights (SCAFFOLD: and a control variate)
+               "communication_bytes_total": 2 * (record["model_bytes"] + record["control_bytes"]) * args.clients * args.rounds,
                "minutes": round((time.time() - t0) / 60, 1)}
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
     print(f"best round {best_round} (val MCC {val[best_round]:.4f}) | test MCC mean {summary['test_MCC_mean']:.4f}, "
@@ -161,11 +163,12 @@ def _run(dataset, args, tag, strategy, client_dir, out):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--datasets", nargs="+", choices=list(config.DATASETS), default=list(config.DATASETS))
-    parser.add_argument("--scaler", choices=["local", "federated"], default="local",
-                        help="each client's own QuantileTransformer, or one merged from the clients' quantiles")
+    parser.add_argument("--scaler", choices=SCALERS, default="local",
+                        help="each client's own QuantileTransformer, or one merged from the clients' quantiles "
+                             "(references: pooled, zscore-local, zscore-federated; see fmml.data.prepare_clients)")
     parser.add_argument("--partition", choices=["iid", "dirichlet"], default="dirichlet")
     parser.add_argument("--alpha", type=float, default=0.5)
-    parser.add_argument("--strategy", choices=["fedavg", "fedprox"], default="fedavg")
+    parser.add_argument("--strategy", choices=["fedavg", "fedprox", "scaffold"], default="fedavg")
     parser.add_argument("--mu", type=float, default=0.01, help="FedProx proximal coefficient")
     parser.add_argument("--clients", type=int, default=10)
     parser.add_argument("--rounds", type=int, default=20)

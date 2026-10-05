@@ -9,6 +9,10 @@ Plans (each in its FMML_EXPERIMENT; see fmml.config):
   random  random splits: centralised seeds; mu selection (federated scaler); FedAvg and FedProx x
           4 partitions (federated scaler) and FedAvg x {IID, 0.5, 0.1} (local scaler) x seeds
   refit   time-ordered splits, train+val refit of the main plan's runs (federated scaler)
+Parts of the main plan run only on request (not in main:all):
+  main:scalers   reference scalers with FedAvg x 4 partitions x seeds: pooled (quantile scaler fit on
+                 all clients' flows), zscore-local, zscore-federated
+  main:scaffold  SCAFFOLD x 4 partitions x seeds, local and federated quantile scaler
 
 Each phase finishes before the next starts (mu must be chosen before the runs that use it); within
 a phase up to --parallel jobs run at once, each simulation in its own Ray instance. Jobs whose
@@ -69,7 +73,8 @@ class Job:
 
 
 def fl_job(plan, dataset, scaler, part, strategy, seed, mu=None, refit=False):
-    """mu: a number, or None for the chosen mu of (plan, dataset, scaler), read when the job starts."""
+    """strategy: fedavg, fedprox or scaffold. mu (FedProx): a number, or None for the chosen mu of
+    (plan, dataset, scaler), read when the job starts."""
     res = RESULTS[plan]
 
     def chosen_mu():
@@ -84,11 +89,11 @@ def fl_job(plan, dataset, scaler, part, strategy, seed, mu=None, refit=False):
         if strategy == "fedprox":
             a += ["--strategy", "fedprox", "--mu", f"{mu if mu is not None else chosen_mu():g}"]
         else:
-            a += ["--strategy", "fedavg"]
+            a += ["--strategy", strategy]
         return a + (["--refit"] if refit else [])
 
     def run_dir():
-        s = "fedavg" if strategy == "fedavg" else f"fedprox-mu{mu if mu is not None else chosen_mu():g}"
+        s = f"fedprox-mu{mu if mu is not None else chosen_mu():g}" if strategy == "fedprox" else strategy
         return res / dataset / scaler / TAG[part] / s / f"seed{seed}"
 
     name = f"{dataset}.{scaler}.{part}.{strategy}{'' if mu is None else f'-mu{mu:g}'}.seed{seed}"
@@ -138,6 +143,14 @@ def post_jobs(plan):
 def plan_phases(plan, seeds, part="all"):
     """The plan as a list of phases (lists of jobs). part: "all", or "fed" / "local" for only the
     federated-scaler or only the local-scaler runs (so the most important block can finish first)."""
+    if plan == "main" and part == "scalers":
+        grid = [fl_job(plan, d, sc, p, "fedavg", s) for s in seeds for d in DATASETS for p in PARTITIONS
+                for sc in ("pooled", "zscore-federated", "zscore-local")]
+        return [grid, *[[j] for j in post_jobs(plan)]]
+    if plan == "main" and part == "scaffold":
+        grid = [fl_job(plan, d, sc, p, "scaffold", s) for s in seeds for d in DATASETS for p in PARTITIONS
+                for sc in ("local", "federated")]
+        return [grid, *[[j] for j in post_jobs(plan)]]
     if part in ("fed", "local"):
         scaler = "federated" if part == "fed" else "local"
         mu = [] if (plan == "random" and part == "local") else [mu_phase(plan, scaler), [choose_job(plan, scaler)]]
@@ -232,19 +245,22 @@ def run_phase(jobs, parallel, log_dir):
 
 
 def main():
-    global GPUS_PER_CLIENT, POST_GPU
+    global GPUS_PER_CLIENT, POST_GPU, MAX_WEIGHT
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--plans", nargs="+", default=["main"],
-                        help="plan[:part], plan in main/random/refit, part in all/fed/local (e.g. main:fed random:fed main:local)")
+                        help="plan[:part], plan in main/random/refit, part in all/fed/local, or for main also "
+                             "scalers/scaffold (e.g. main:fed random:fed main:local main:scalers)")
     parser.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     parser.add_argument("--parallel", type=int, default=2, help="simulations (or training jobs) at a time")
     parser.add_argument("--gpus-per-client", type=float, default=0.5,
                         help="GPU share per simulated client within one simulation")
     parser.add_argument("--post-gpu", action="store_true",
                         help="run the evaluation steps on the GPU (they run alone in their phase); for hosts with a slow CPU")
+    parser.add_argument("--max-weight", type=int, default=MAX_WEIGHT,
+                        help="memory budget for jobs running together, in WEIGHT units (2 for ~16 GB RAM)")
     parser.add_argument("--dry-run", action="store_true", help="list the jobs still to run")
     args = parser.parse_args()
-    GPUS_PER_CLIENT, POST_GPU = args.gpus_per_client, args.post_gpu
+    GPUS_PER_CLIENT, POST_GPU, MAX_WEIGHT = args.gpus_per_client, args.post_gpu, args.max_weight
     log_dir = ROOT / "runs" / "logs" / "jobs"
     failed = []
     for spec in args.plans:

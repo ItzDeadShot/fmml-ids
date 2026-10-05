@@ -34,7 +34,7 @@ from sklearn.preprocessing import QuantileTransformer
 
 import fmml.architectures  # noqa: F401  (registers custom layers for saved models)
 from fmml import config
-from fmml.data import load_client, load_scaler, load_split
+from fmml.data import load_client, load_scaler, load_split, shares_scaler
 from fmml.metrics import binary_metrics, mcc
 
 THRESHOLDS = 1 / (1 + np.exp(-np.linspace(-12, 12, 481)))
@@ -123,8 +123,8 @@ def main():
                 t, v, v_half = choose(*pooled)
             rows, cache = [], {}
             for k in range(n_clients):
-                sc = load_scaler(client_dir, 0 if scaler == "federated" else k)
-                key = 0 if scaler == "federated" else k
+                sc = load_scaler(client_dir, 0 if shares_scaler(scaler) else k)
+                key = 0 if shares_scaler(scaler) else k
                 if key not in cache:
                     cache[key] = binary_metrics(y_te, (predict(model, sc.transform(X_te)) > t).astype(int))
                 rows.append({"client": k, **cache[key]})

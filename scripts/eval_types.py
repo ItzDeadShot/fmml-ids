@@ -25,7 +25,7 @@ from sklearn.preprocessing import QuantileTransformer
 
 import fmml.architectures  # noqa: F401  (registers custom layers for saved models)
 from fmml import config
-from fmml.data import load_scaler, load_split
+from fmml.data import load_scaler, load_split, shares_scaler
 
 
 def rates(model, X, attack, client):
@@ -77,7 +77,7 @@ def main():
                 config.RUNS_DIR / "models" / dataset / scaler / tag / strategy / f"{seed}.keras")
             client_dir = config.RUNS_DIR / "clients" / dataset / scaler / tag / seed
             n_clients = len(list(client_dir.glob("scaler_*.pkl")))
-            if scaler == "federated":                   # one common scaler: identical for every client
+            if shares_scaler(scaler):                   # one common scaler: identical for every client
                 first = rates(model, load_scaler(client_dir, 0).transform(X_te), att_te, 0)
                 per_client = [first] + [(first[0].assign(client=k), first[1].assign(client=k))
                                         for k in range(1, n_clients)]

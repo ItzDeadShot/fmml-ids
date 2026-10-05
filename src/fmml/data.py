@@ -5,9 +5,18 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import QuantileTransformer, StandardScaler
 
 from . import config
+
+# Scalers (see prepare_clients). The quantile scalers are the study's; "pooled" is the non-deployable
+# reference for any scaler fit across clients, the z-score pair shows the effect beyond quantile scaling.
+SCALERS = ["local", "federated", "pooled", "zscore-local", "zscore-federated"]
+SHARED_SCALERS = {"federated", "pooled", "zscore-federated"}      # one scaler common to all clients
+
+
+def shares_scaler(scaler: str) -> bool:
+    return scaler in SHARED_SCALERS
 
 
 def load_split(path):
@@ -86,6 +95,20 @@ def merge_quantile_scalers(scalers, weights, seed: int) -> QuantileTransformer:
     return merged
 
 
+def merge_standard_scalers(scalers) -> StandardScaler:
+    """One StandardScaler for all clients from the clients' own: each shares its flow count and its
+    per-feature mean and variance, from which the pooled mean and variance follow exactly (as in
+    StatAvg, Bouzinis et al. 2024). Equal to a StandardScaler fit on the clients' pooled data."""
+    n = np.array([s.n_samples_seen_ for s in scalers], dtype="float64")
+    means, variances = np.stack([s.mean_ for s in scalers]), np.stack([s.var_ for s in scalers])
+    mean = n @ means / n.sum()
+    var = np.maximum(n @ (variances + means ** 2) / n.sum() - mean ** 2, 0)
+    merged = StandardScaler().fit(means[:2])                  # sets the fitted attributes; replaced below
+    merged.n_samples_seen_, merged.mean_, merged.var_ = int(n.sum()), mean, var
+    merged.scale_ = np.where(var > 0, np.sqrt(var), 1.0)       # as StandardScaler: constant features unscaled
+    return merged
+
+
 def prepare_clients(dataset: str, partition: str, alpha: float, n_clients: int, seed: int, out_dir: Path,
                     scaler: str = "local", refit: bool = False):
     """Partition the pool, fit the clients' scalers on their training data, and save everything
@@ -93,6 +116,10 @@ def prepare_clients(dataset: str, partition: str, alpha: float, n_clients: int, 
 
     scaler="local": every client scales with its own QuantileTransformer. scaler="federated": the
     clients' QuantileTransformers are merged into one common scaler (merge_quantile_scalers).
+    scaler="pooled": one QuantileTransformer fit on all clients' training flows together, which no
+    client could do without sharing its flows: the reference for a scaler fit across clients (the
+    same fit as the centralised baseline's). "zscore-local" / "zscore-federated": the same contrast
+    with StandardScaler, the federated one exact from the clients' counts, means and variances.
     refit=True: each client trains on its train and validation flows together (for retraining the
     final model with settings already chosen); its validation flows are kept only for monitoring.
 
@@ -113,9 +140,18 @@ def prepare_clients(dataset: str, partition: str, alpha: float, n_clients: int, 
         if refit:
             tr = idx
         splits.append((tr, va))
-    scalers = [QuantileTransformer(output_distribution="normal", random_state=seed).fit(X[tr]) for tr, _ in splits]
-    if scaler == "federated":
-        scalers = [merge_quantile_scalers(scalers, [len(tr) for tr, _ in splits], seed)] * n_clients
+    assert scaler in SCALERS, scaler
+    if scaler == "pooled":                                     # all clients' training flows, in pool order
+        pooled = np.sort(np.concatenate([tr for tr, _ in splits]))
+        scalers = [QuantileTransformer(output_distribution="normal", random_state=seed).fit(X[pooled])] * n_clients
+    elif scaler.startswith("zscore"):
+        scalers = [StandardScaler().fit(X[tr]) for tr, _ in splits]
+        if scaler == "zscore-federated":
+            scalers = [merge_standard_scalers(scalers)] * n_clients
+    else:
+        scalers = [QuantileTransformer(output_distribution="normal", random_state=seed).fit(X[tr]) for tr, _ in splits]
+        if scaler == "federated":
+            scalers = [merge_quantile_scalers(scalers, [len(tr) for tr, _ in splits], seed)] * n_clients
     stats = []
     for k, (idx, (tr, va), sc) in enumerate(zip(parts, splits, scalers)):
         yk, y_tr, y_va = y[idx], y[tr], y[va]
@@ -137,6 +173,6 @@ def load_client(out_dir: Path, k: int):
     return z["X_train"], z["y_train"], z["X_val"], z["y_val"]
 
 
-def load_scaler(out_dir: Path, k: int) -> QuantileTransformer:
+def load_scaler(out_dir: Path, k: int):
     with open(out_dir / f"scaler_{k}.pkl", "rb") as f:
         return pickle.load(f)
