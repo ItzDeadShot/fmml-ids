@@ -12,7 +12,8 @@ Plans (each in its FMML_EXPERIMENT; see fmml.config):
 Parts of the main plan run only on request (not in main:all):
   main:scalers   reference scalers with FedAvg x 4 partitions x seeds: pooled (quantile scaler fit on
                  all clients' flows), zscore-local, zscore-federated
-  main:scaffold  SCAFFOLD x 4 partitions x seeds, local and federated quantile scaler
+  main:scaffold  SCAFFOLD (local SGD) x 4 partitions x seeds, local and federated quantile scaler,
+                 after choosing the local learning rate per dataset and scaler (as FedProx's mu)
 
 Each phase finishes before the next starts (mu must be chosen before the runs that use it); within
 a phase up to --parallel jobs run at once, each simulation in its own Ray instance. Jobs whose
@@ -34,6 +35,7 @@ PARTITIONS = {"iid": ["--partition", "iid"], "a1": ["--partition", "dirichlet", 
               "a0.5": ["--partition", "dirichlet", "--alpha", "0.5"], "a0.1": ["--partition", "dirichlet", "--alpha", "0.1"]}
 TAG = {"iid": "iid", "a1": "dirichlet-a1", "a0.5": "dirichlet-a0.5", "a0.1": "dirichlet-a0.1"}
 MUS = [0.001, 0.01, 0.1]
+LRS = [0.01, 0.03, 0.1, 0.3]                           # SCAFFOLD local SGD learning rates
 RESULTS = {"main": ROOT / "results", "random": ROOT / "results" / "random", "refit": ROOT / "results" / "refit"}
 EXPERIMENT = {"main": "", "random": "random", "refit": "refit"}
 
@@ -72,10 +74,13 @@ class Job:
         return [PY] + (self.args() if callable(self.args) else self.args)
 
 
-def fl_job(plan, dataset, scaler, part, strategy, seed, mu=None, refit=False):
-    """strategy: fedavg, fedprox or scaffold. mu (FedProx): a number, or None for the chosen mu of
-    (plan, dataset, scaler), read when the job starts."""
+def fl_job(plan, dataset, scaler, part, strategy, seed, mu=None, refit=False, lr=None):
+    """strategy: fedavg, fedprox or scaffold. mu (FedProx) and lr (SCAFFOLD): a number, or None for
+    the value chosen for (plan, dataset, scaler), read when the job starts."""
     res = RESULTS[plan]
+
+    def chosen_lr():
+        return json.loads((res / dataset / scaler / "scaffold_lr.json").read_text())["local_lr"]
 
     def chosen_mu():
         f = res / dataset / scaler / "fedprox_mu.json"
@@ -88,15 +93,18 @@ def fl_job(plan, dataset, scaler, part, strategy, seed, mu=None, refit=False):
              "--skip-existing", "--gpus-per-client", str(GPUS_PER_CLIENT)]
         if strategy == "fedprox":
             a += ["--strategy", "fedprox", "--mu", f"{mu if mu is not None else chosen_mu():g}"]
+        elif strategy == "scaffold":
+            a += ["--strategy", "scaffold", "--lr", f"{lr if lr is not None else chosen_lr():g}"]
         else:
             a += ["--strategy", strategy]
         return a + (["--refit"] if refit else [])
 
     def run_dir():
-        s = f"fedprox-mu{mu if mu is not None else chosen_mu():g}" if strategy == "fedprox" else strategy
+        s = {"fedprox": lambda: f"fedprox-mu{mu if mu is not None else chosen_mu():g}",
+             "scaffold": lambda: f"scaffold-lr{lr if lr is not None else chosen_lr():g}"}.get(strategy, lambda: strategy)()
         return res / dataset / scaler / TAG[part] / s / f"seed{seed}"
 
-    name = f"{dataset}.{scaler}.{part}.{strategy}{'' if mu is None else f'-mu{mu:g}'}.seed{seed}"
+    name = f"{dataset}.{scaler}.{part}.{strategy}{'' if mu is None else f'-mu{mu:g}'}{'' if lr is None else f'-lr{lr:g}'}.seed{seed}"
     return Job(plan, name, args, lambda: (run_dir() / "summary.json").exists(),
                lock=lambda: run_dir() / ".running", weight=WEIGHT.get(dataset, 0))
 
@@ -110,6 +118,16 @@ def central_jobs(plan, seeds, refit=False):
 
 def mu_phase(plan, scaler):
     return [fl_job(plan, d, scaler, "a0.5", "fedprox", 0, mu=mu) for mu in MUS for d in DATASETS]
+
+
+def lr_phase(plan):
+    return [fl_job(plan, d, sc, "a0.5", "scaffold", 0, lr=lr) for lr in LRS for d in DATASETS for sc in ("local", "federated")]
+
+
+def choose_lr_job(plan, scaler):
+    res = RESULTS[plan]
+    return Job(plan, f"choose_lr.{scaler}", ["scripts/choose_lr.py", "--scaler", scaler, "--lrs", *map(str, LRS)],
+               lambda: all((res / d / scaler / "scaffold_lr.json").exists() for d in DATASETS), gpu=False)
 
 
 def choose_job(plan, scaler):
@@ -150,7 +168,8 @@ def plan_phases(plan, seeds, part="all"):
     if plan == "main" and part == "scaffold":
         grid = [fl_job(plan, d, sc, p, "scaffold", s) for s in seeds for d in DATASETS for p in PARTITIONS
                 for sc in ("local", "federated")]
-        return [grid, *[[j] for j in post_jobs(plan)]]
+        return [lr_phase(plan), [choose_lr_job(plan, "local"), choose_lr_job(plan, "federated")], grid,
+                *[[j] for j in post_jobs(plan)]]
     if part in ("fed", "local"):
         scaler = "federated" if part == "fed" else "local"
         mu = [] if (plan == "random" and part == "local") else [mu_phase(plan, scaler), [choose_job(plan, scaler)]]

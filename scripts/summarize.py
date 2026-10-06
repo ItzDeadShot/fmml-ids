@@ -4,7 +4,8 @@
 
 Writes
   results/summary.csv        one row per dataset x scaler x partition x strategy (FedProx at the mu
-                             chosen for that dataset and scaler, results/<dataset>/<scaler>/fedprox_mu.json): mean and std over seeds of
+                             chosen for that dataset and scaler, results/<dataset>/<scaler>/fedprox_mu.json,
+                             SCAFFOLD at the chosen local rate, .../scaffold_lr.json): mean and std over seeds of
                              the test metrics (for federated runs: the mean over clients, and the
                              worst client's F1 and MCC), the chosen round (centralised: epoch) and
                              the number of seeds;
@@ -87,14 +88,18 @@ def load_types():
 
 
 def chosen_mu_only(df):
-    """Drop FedProx runs at a mu other than the one chosen for their dataset and scaler."""
+    """Drop FedProx runs at a mu, and SCAFFOLD runs at a local rate, other than the one chosen for
+    their dataset and scaler."""
     keep = []
     for (dataset, scaler), group in df.groupby(["dataset", "scaler"]):
         f = config.RESULTS_DIR / dataset / scaler / "fedprox_mu.json"
         if not f.exists():                             # refit experiment: the main study's choice
             f = config.MAIN_RESULTS_DIR / dataset / scaler / "fedprox_mu.json"
         chosen = f"fedprox-mu{json.loads(f.read_text())['proximal_mu']:g}" if f.exists() else None
-        keep.append(group[~group.strategy.str.startswith("fedprox") | (group.strategy == chosen)])
+        f = config.RESULTS_DIR / dataset / scaler / "scaffold_lr.json"
+        chosen_lr = f"scaffold-lr{json.loads(f.read_text())['local_lr']:g}" if f.exists() else None
+        keep.append(group[(~group.strategy.str.startswith("fedprox") | (group.strategy == chosen))
+                          & (~group.strategy.str.startswith("scaffold") | (group.strategy == chosen_lr))])
     return pd.concat(keep)
 
 

@@ -63,7 +63,7 @@ class FLClient(NumPyClient):
         if "control" in cfg:                              # SCAFFOLD: the server's control variate
             control = _scaffold(model).fit(self.X_tr, self.y_tr, np.frombuffer(cfg["control"], dtype="float32"),
                                            self.state_dir / f"control_{self.cid}.npy", int(cfg["local_epochs"]),
-                                           batch_size, fit_seed)
+                                           batch_size, fit_seed, float(cfg["local_lr"]))
             extra["control"] = control.tobytes()
         elif mu > 0:
             _proximal(model).fit(self.X_tr, self.y_tr, mu, int(cfg["local_epochs"]), batch_size, fit_seed)
@@ -141,15 +141,25 @@ def _scaffold(model):
 
 
 class _ScaffoldTrainer:
-    """Local training for SCAFFOLD (Karimireddy et al. 2020): every gradient step is corrected by
-    c - c_i, the server's control variate minus the client's, before the optimizer applies it.
+    """Local training for SCAFFOLD (Karimireddy et al. 2020): plain SGD steps
+    y <- y - lr (g_i(y) + c - c_i), with c the server's control variate and c_i the client's.
 
-    The client's new control variate is option I of the paper: its full-data gradient at the
-    received global weights (one extra pass over its training data). Option II derives it from the
-    weight change divided by the number of steps times the learning rate, which assumes plain SGD;
-    option I does not depend on the optimizer, so local training keeps the same Adam as FedAvg and
-    FedProx. Control variates cover the trainable variables, flattened in their order. The steps
-    are XLA-compiled, as in the other strategies."""
+    Local SGD, as in the paper, rather than the Adam of FedAvg and FedProx: Adam rescales every
+    coordinate by its own gradient history, so once the local gradient is small the constant
+    correction c - c_i turns into a full learning-rate step on every weight at every local step.
+    With Adam the client updates grew 2-6x over FedAvg's under attack-type skew, saturated the
+    output and froze 34 of 160 runs (all updates exactly zero; results/_archive_scaffold_adam).
+    The local learning rate is chosen per dataset and scaler on validation MCC
+    (scripts/choose_lr.py), like FedProx's mu.
+
+    The client's new control variate is option II of the paper, c_i + (x - y) / (K lr) - c with x
+    the received weights, y the weights after the K local steps: the mean gradient along the
+    client's own trajectory. Option I (the full-data gradient at x, used in the next round) was
+    unstable here: on CSE-CIC-IDS2018 and ToN-IoT the correction, a gradient at the previous
+    round's weights (in round 2: at the random initial weights), pushed every one of a client's
+    70-300 local steps and the client updates jumped 10x after round 1; most CIC runs froze.
+    Control variates cover the trainable variables, flattened in their order. The steps are
+    XLA-compiled, as in the other strategies."""
 
     def __init__(self, model):
         import tensorflow as tf
@@ -157,7 +167,8 @@ class _ScaffoldTrainer:
         tv = model.trainable_variables
         self.shapes = [tuple(v.shape) for v in tv]
         self.correction = [tf.Variable(tf.zeros_like(v), trainable=False) for v in tv]
-        self.grad_sum = [tf.Variable(tf.zeros_like(v), trainable=False) for v in tv]
+        self.sgd = tf.keras.optimizers.SGD(learning_rate=0.01)    # rate set per fit
+        self.sgd.build(tv)
         bce = tf.keras.losses.BinaryCrossentropy()
 
         @tf.function(jit_compile=True, reduce_retracing=True)
@@ -165,41 +176,35 @@ class _ScaffoldTrainer:
             with tf.GradientTape() as tape:
                 loss = bce(yb, tf.squeeze(model(xb, training=True), -1))
             grads = tape.gradient(loss, model.trainable_variables)
-            model.optimizer.apply_gradients(zip([g + c for g, c in zip(grads, self.correction)],
-                                                model.trainable_variables))
+            self.sgd.apply_gradients(zip([g + c for g, c in zip(grads, self.correction)], model.trainable_variables))
 
-        @tf.function(jit_compile=True, reduce_retracing=True)
-        def accumulate(xb, yb):                            # adds the batch's summed loss gradient
-            with tf.GradientTape() as tape:
-                loss = bce(yb, tf.squeeze(model(xb, training=True), -1))
-            n = tf.cast(tf.shape(yb)[0], loss.dtype)
-            for total, g in zip(self.grad_sum, tape.gradient(loss, model.trainable_variables)):
-                total.assign_add(g * n)
-
-        self.step, self.accumulate = step, accumulate
+        self.step = step
 
     def split(self, flat):
         cuts = np.cumsum([int(np.prod(s)) for s in self.shapes])[:-1]
         return [part.reshape(s) for part, s in zip(np.split(flat, cuts), self.shapes)]
 
-    def fit(self, X, y, control, state_file: Path, epochs, batch_size, seed) -> np.ndarray:
-        """Train with the correction; returns the client's new control variate (flat float32)."""
+    def flat_weights(self) -> np.ndarray:
+        return np.concatenate([v.numpy().ravel() for v in self.model.trainable_variables]).astype("float64")
+
+    def fit(self, X, y, control, state_file: Path, epochs, batch_size, seed, lr) -> np.ndarray:
+        """Train with the correction at learning rate lr; returns the client's new control variate
+        (flat float32)."""
         import tensorflow as tf
         own = np.load(state_file) if state_file.exists() else np.zeros_like(control)
         y = y.astype("float32")
-        for total in self.grad_sum:
-            total.assign(tf.zeros_like(total))
-        for start in range(0, len(y), 8192):               # new control variate, at the received weights
-            self.accumulate(tf.constant(X[start:start + 8192]), tf.constant(y[start:start + 8192]))
-        new = (np.concatenate([total.numpy().ravel() for total in self.grad_sum]) / len(y)).astype("float32")
         for corr, value in zip(self.correction, self.split(control - own)):
             corr.assign(value)
-        rng = np.random.default_rng(seed)
+        self.sgd.learning_rate.assign(lr)
+        received = self.flat_weights()
+        rng, steps = np.random.default_rng(seed), 0
         for _ in range(epochs):
             order = rng.permutation(len(y))
             for start in range(0, len(y), batch_size):
                 batch = order[start:start + batch_size]
                 self.step(tf.constant(X[batch]), tf.constant(y[batch]))
+                steps += 1
+        new = (own - control + (received - self.flat_weights()) / (steps * lr)).astype("float32")
         np.save(state_file, new)
         return new
 
@@ -278,11 +283,11 @@ class RecordingScaffold(_Recorder, FedAvg):
 
 
 def run_federation(dataset: str, client_dir: Path, n_clients: int, strategy: str, rounds: int, local_epochs: int,
-                   seed: int, proximal_mu: float = 0.0, num_gpus_per_client: float = 0.5):
+                   seed: int, proximal_mu: float = 0.0, num_gpus_per_client: float = 0.5, local_lr: float = None):
     """Run the simulation; returns {"weights": {round: ndarrays}, "val_loss": {...}, "val_accuracy": {...},
     "val_mcc": {...}, "updates": [...], "failures": [...], "round_end": {round: time}, "start": time,
     "model_bytes": size of one copy of the weights, "control_bytes": size of one SCAFFOLD control variate
-    (0 for the other strategies)}."""
+    (0 for the other strategies)}. local_lr: SCAFFOLD's local SGD learning rate."""
     import tensorflow as tf
     from .models import build_model
 
@@ -303,7 +308,8 @@ def run_federation(dataset: str, client_dir: Path, n_clients: int, strategy: str
 
     kwargs = dict(fraction_fit=1.0, fraction_evaluate=1.0, min_fit_clients=n_clients, min_evaluate_clients=n_clients,
                   min_available_clients=n_clients, initial_parameters=ndarrays_to_parameters(initial),
-                  on_fit_config_fn=lambda r: {"round": r, "local_epochs": local_epochs},
+                  on_fit_config_fn=lambda r: {"round": r, "local_epochs": local_epochs,
+                                              **({"local_lr": local_lr} if strategy == "scaffold" else {})},
                   evaluate_metrics_aggregation_fn=pooled_validation)
 
     def server_fn(context: Context):

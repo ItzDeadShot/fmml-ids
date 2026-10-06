@@ -19,7 +19,7 @@ For each dataset:
      the client's own scaler); report every client, the mean and the worst.
 
 Writes results/<dataset>/<scaler>/<partition>/<strategy>/seed<N>/ (partition.json, history.csv,
-test_metrics.csv, client_updates.csv, summary.json), with <strategy> fedavg, fedprox-mu<mu> or scaffold, and
+test_metrics.csv, client_updates.csv, summary.json), with <strategy> fedavg, fedprox-mu<mu> or scaffold-lr<lr> (local SGD rate), and
 the chosen global model to runs/models/.
 client_updates.csv holds each client's per-round update norm and cosine similarity to the mean
 update: the benign reference for later attack and defence experiments.
@@ -59,7 +59,7 @@ def run(dataset, args):
     from fmml.models import build_model
 
     tag = "iid" if args.partition == "iid" else f"dirichlet-a{args.alpha:g}"
-    strategy = f"fedprox-mu{args.mu:g}" if args.strategy == "fedprox" else args.strategy
+    strategy = {"fedprox": f"fedprox-mu{args.mu:g}", "scaffold": f"scaffold-lr{args.lr:g}"}.get(args.strategy, args.strategy)
     if args.refit:                                   # retrain with the main study's chosen number of rounds
         assert config.EXPERIMENT == "refit", "run --refit with FMML_EXPERIMENT=refit"
         reference = json.loads((config.MAIN_RESULTS_DIR / dataset / args.scaler / tag / strategy
@@ -102,7 +102,7 @@ def _run(dataset, args, tag, strategy, client_dir, out):
     print(pd.DataFrame(stats).drop(columns=["types"]).to_string(index=False))
 
     record = run_federation(dataset, client_dir, args.clients, args.strategy, args.rounds, args.local_epochs,
-                            args.seed, proximal_mu=args.mu, num_gpus_per_client=args.gpus_per_client)
+                            args.seed, proximal_mu=args.mu, num_gpus_per_client=args.gpus_per_client, local_lr=args.lr)
     # A client that failed (e.g. killed for memory) would silently drop out of the average: discard the run.
     if record["failures"] or len(record["val_mcc"]) < args.rounds:
         raise RuntimeError(f"{out}: client failures {record['failures']}, {len(record['val_mcc'])}/{args.rounds} rounds")
@@ -142,7 +142,8 @@ def _run(dataset, args, tag, strategy, client_dir, out):
     summary = {"dataset": dataset, "scaler": args.scaler, "partition": tag, "strategy": args.strategy, "seed": args.seed,
                "refit": args.refit, "host": socket.gethostname(),
                "clients": args.clients, "rounds": args.rounds, "local_epochs": args.local_epochs,
-               "proximal_mu": args.mu if args.strategy == "fedprox" else None, "best_round": best_round,
+               "proximal_mu": args.mu if args.strategy == "fedprox" else None,
+               "local_lr": args.lr if args.strategy == "scaffold" else None, "best_round": best_round,
                "val_mcc_best": float(val[best_round]), "val_loss_best": float(record["val_loss"][best_round]),
                **{f"test_{m}_mean": float(test[m].mean()) for m in ["Accuracy", "Precision", "Recall", "F1", "FPR", "BalancedAccuracy", "MCC"]},
                "test_F1_worst": float(test.F1.min()), "test_MCC_worst": float(test.MCC.min()),
@@ -170,6 +171,7 @@ def main():
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--strategy", choices=["fedavg", "fedprox", "scaffold"], default="fedavg")
     parser.add_argument("--mu", type=float, default=0.01, help="FedProx proximal coefficient")
+    parser.add_argument("--lr", type=float, default=0.1, help="SCAFFOLD local SGD learning rate")
     parser.add_argument("--clients", type=int, default=10)
     parser.add_argument("--rounds", type=int, default=20)
     parser.add_argument("--local-epochs", type=int, default=1)
