@@ -1,0 +1,8 @@
+{
+  "threshold": 0.5,
+  "val_mcc_at_threshold": 0.998299299500091,
+  "val_mcc_at_0.5": 0.998299299500091,
+  "test_MCC_mean": 0.9982431362190882,
+  "test_MCC_worst": 0.9982431362190882,
+  "test_FPR_mean": 0.0002992120748695103
+}

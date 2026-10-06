@@ -1,0 +1,202 @@
+[
+  {
+    "client": 0,
+    "flows": 90001,
+    "train": 71896,
+    "val": 18105,
+    "attack_share": 0.5622,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39402,
+      "injection": 8984,
+      "password": 8978,
+      "ddos": 8954,
+      "xss": 8899,
+      "dos": 8884,
+      "scanning": 3370,
+      "Backdoor": 1835,
+      "mitm": 427,
+      "ransomware": 268
+    }
+  },
+  {
+    "client": 1,
+    "flows": 90000,
+    "train": 71951,
+    "val": 18049,
+    "attack_share": 0.5655,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39107,
+      "xss": 9144,
+      "ddos": 9041,
+      "injection": 8984,
+      "dos": 8957,
+      "password": 8914,
+      "scanning": 3365,
+      "Backdoor": 1800,
+      "mitm": 436,
+      "ransomware": 252
+    }
+  },
+  {
+    "client": 2,
+    "flows": 90000,
+    "train": 71970,
+    "val": 18030,
+    "attack_share": 0.5645,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39198,
+      "password": 9077,
+      "xss": 9049,
+      "injection": 9000,
+      "ddos": 8909,
+      "dos": 8877,
+      "scanning": 3337,
+      "Backdoor": 1845,
+      "mitm": 467,
+      "ransomware": 241
+    }
+  },
+  {
+    "client": 3,
+    "flows": 90000,
+    "train": 72021,
+    "val": 17979,
+    "attack_share": 0.5676,
+    "attack_types": 9,
+    "types": {
+      "Benign": 38920,
+      "ddos": 9187,
+      "dos": 9046,
+      "injection": 9038,
+      "xss": 9012,
+      "password": 8939,
+      "scanning": 3418,
+      "Backdoor": 1755,
+      "mitm": 455,
+      "ransomware": 230
+    }
+  },
+  {
+    "client": 4,
+    "flows": 90000,
+    "train": 72116,
+    "val": 17884,
+    "attack_share": 0.5666,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39007,
+      "password": 9090,
+      "dos": 9073,
+      "ddos": 9055,
+      "xss": 8969,
+      "injection": 8861,
+      "scanning": 3390,
+      "Backdoor": 1875,
+      "mitm": 443,
+      "ransomware": 237
+    }
+  },
+  {
+    "client": 5,
+    "flows": 90000,
+    "train": 72169,
+    "val": 17831,
+    "attack_share": 0.5643,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39217,
+      "injection": 9042,
+      "ddos": 8995,
+      "password": 8974,
+      "xss": 8959,
+      "dos": 8948,
+      "scanning": 3469,
+      "Backdoor": 1731,
+      "mitm": 429,
+      "ransomware": 236
+    }
+  },
+  {
+    "client": 6,
+    "flows": 90000,
+    "train": 71927,
+    "val": 18073,
+    "attack_share": 0.5654,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39116,
+      "dos": 9156,
+      "injection": 9114,
+      "xss": 8962,
+      "password": 8945,
+      "ddos": 8917,
+      "scanning": 3307,
+      "Backdoor": 1816,
+      "mitm": 440,
+      "ransomware": 227
+    }
+  },
+  {
+    "client": 7,
+    "flows": 90000,
+    "train": 71933,
+    "val": 18067,
+    "attack_share": 0.5651,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39141,
+      "dos": 9174,
+      "injection": 9026,
+      "xss": 8965,
+      "password": 8936,
+      "ddos": 8824,
+      "scanning": 3414,
+      "Backdoor": 1849,
+      "mitm": 443,
+      "ransomware": 228
+    }
+  },
+  {
+    "client": 8,
+    "flows": 90000,
+    "train": 71817,
+    "val": 18183,
+    "attack_share": 0.5637,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39263,
+      "password": 9112,
+      "ddos": 9081,
+      "xss": 9009,
+      "dos": 8920,
+      "injection": 8866,
+      "scanning": 3312,
+      "Backdoor": 1768,
+      "mitm": 437,
+      "ransomware": 232
+    }
+  },
+  {
+    "client": 9,
+    "flows": 90000,
+    "train": 72201,
+    "val": 17799,
+    "attack_share": 0.5652,
+    "attack_types": 9,
+    "types": {
+      "Benign": 39129,
+      "injection": 9085,
+      "ddos": 9037,
+      "password": 9035,
+      "xss": 9032,
+      "dos": 8965,
+      "scanning": 3312,
+      "Backdoor": 1698,
+      "mitm": 443,
+      "ransomware": 264
+    }
+  }
+]
