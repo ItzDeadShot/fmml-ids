@@ -23,10 +23,12 @@ quantile scaler (*local*) or one scaler merged from the clients' quantile sketch
 │   ├── tune_arch.py           architecture search on the validation split; tree_reference.py for trees
 │   ├── train_central.py       centralised baseline
 │   ├── run_fl.py              one federated run (dataset, scaler, partition, strategy, seed)
-│   ├── choose_mu.py           FedProx mu by validation MCC
+│   ├── choose_mu.py           FedProx mu by validation MCC; choose_lr.py: SCAFFOLD local rate
 │   ├── eval_types.py          per-attack-type detection rates, ROC-AUC, PR-AUC
 │   ├── calibrate_threshold.py decision threshold from the clients' validation data
 │   ├── summarize.py           mean and std over seeds
+│   ├── mechanism.py           why the local scaler fails: per-client rank shift, common-encoding re-evaluation
+│   ├── check_scaler_merge.py  merged federated scaler vs pooled and exact quantile scalers
 │   ├── run_queue.py           runs a whole experiment plan (resumable, several jobs at a time)
 │   └── wandb_sync.py          mirrors results/ to Weights & Biases
 ├── results/                   per-run and summarised results (random/: the random-split study)
@@ -67,7 +69,8 @@ Each federated run writes `results/<dataset>/<scaler>/<partition>/<strategy>/see
 `summary.json`, `history.csv` (per round), `test_metrics.csv` (per client), `client_updates.csv`
 (per client and round: update norm and cosine to the mean update), `partition.json`, and after
 evaluation `type_metrics.csv`, `auc.csv`, `calibrated.json`. Aggregated tables:
-`results/summary.csv`, `results/type_summary.csv`, `results/mu_selection.csv`.
+`results/summary.csv`, `results/type_summary.csv`, `results/mu_selection.csv`. Analyses of the
+local scaler and of the scaler merge: `results/mechanism/` (`report.txt`, `scaler_merge.txt`).
 
 ## Experiment tracking
 

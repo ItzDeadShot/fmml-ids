@@ -1,0 +1,46 @@
+Within a run (same model and test flows; only the client's scaler differs), mean over seeds:
+                rho_shift_MCC  rho_tv_MCC  worst_is_most_shifted  worst_in_top2_shifted  MCC_spread
+partition                                                                                          
+dirichlet-a0.1         -0.431      -0.434                   0.25                   0.50       0.534
+dirichlet-a0.5         -0.643      -0.456                   0.70                   0.85       0.315
+dirichlet-a1           -0.401      -0.340                   0.50                   0.70       0.143
+iid                    -0.059       0.183                   0.10                   0.30       0.018
+
+Non-IID runs: 60; Spearman(shift_mean, MCC) mean -0.491, negative in 50; worst client = most shifted in 29 (chance 6), among the 2 most shifted in 41 (chance 12)
+
+Pooled over the clients of non-IID runs, Spearman with damage / MCC / ROC-AUC:
+  shift_mean       0.592 -0.541 -0.630
+  shift_max        0.606 -0.600 -0.706
+  composition_tv   0.606 -0.685 -0.724
+  attack_share     0.467 -0.544 -0.461
+  train_flows     -0.345  0.221  0.091
+
+Rank shift (shift_mean) by dataset and partition, mean over clients and seeds:
+dataset         BoT-IoT  CIC-2018  ToN-IoT  UNSW-NB15
+partition                                            
+dirichlet-a0.1    0.071     0.101    0.061      0.097
+dirichlet-a0.5    0.041     0.064    0.038      0.052
+dirichlet-a1      0.027     0.039    0.026      0.021
+iid               0.002     0.003    0.002      0.007
+
+The local-scaler global model through a common encoding (mean over seeds):
+                          MCC_worst  MCC_mean  MCC_via_pooled  MCC_via_federated  MCC_federated_run  ROC_AUC_worst  ROC_AUC_via_pooled
+dataset   partition                                                                                                                   
+BoT-IoT   dirichlet-a0.1      0.282     0.656           0.778              0.780              0.814          0.874               0.984
+          dirichlet-a0.5      0.683     0.873           0.923              0.924              0.934          0.961               0.989
+          dirichlet-a1        0.673     0.798           0.789              0.797              0.808          0.969               0.989
+          iid                 0.679     0.707           0.708              0.705              0.710          0.989               0.990
+CIC-2018  dirichlet-a0.1      0.440     0.686           0.820              0.820              0.856          0.843               0.937
+          dirichlet-a0.5      0.638     0.831           0.861              0.861              0.865          0.884               0.960
+          dirichlet-a1        0.807     0.855           0.864              0.864              0.867          0.935               0.961
+          iid                 0.867     0.867           0.867              0.867              0.867          0.963               0.963
+ToN-IoT   dirichlet-a0.1      0.247     0.425           0.423              0.422              0.609          0.655               0.814
+          dirichlet-a0.5      0.422     0.605           0.636              0.638              0.701          0.725               0.920
+          dirichlet-a1        0.540     0.713           0.767              0.766              0.752          0.863               0.954
+          iid                 0.756     0.761           0.761              0.762              0.770          0.951               0.952
+UNSW-NB15 dirichlet-a0.1      0.141     0.715           0.975              0.822              0.992          0.288               1.000
+          dirichlet-a0.5      0.515     0.886           0.989              0.996              0.999          0.715               1.000
+          dirichlet-a1        0.943     0.993           0.999              0.999              0.999          0.994               1.000
+          iid                 0.999     0.999           0.999              0.999              0.999          1.000               1.000
+
+Non-IID runs: via pooled > worst client in 60/60 (mean gain 0.291, median 0.241); via pooled > client mean in 48/60; federated-scaler run minus via pooled: mean 0.031, median 0.005

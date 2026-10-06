@@ -1,0 +1,50 @@
+Errors against the exact (full train split) scaler on the test split, mean over seeds:
+                          merged_rank_mean  pooled_rank_mean  merged_rank_p99  pooled_rank_p99  merged_rank_max  pooled_rank_max  merged_normal_mean  pooled_normal_mean
+dataset   partition                                                                                                                                                     
+BoT-IoT   dirichlet-a0.1            0.0006            0.0015           0.0015           0.0040           0.0019           0.0052              0.0041              0.0138
+          dirichlet-a0.5            0.0004            0.0015           0.0011           0.0040           0.0015           0.0052              0.0038              0.0138
+          dirichlet-a1              0.0004            0.0015           0.0011           0.0040           0.0016           0.0052              0.0035              0.0138
+          iid                       0.0005            0.0015           0.0014           0.0040           0.0018           0.0052              0.0041              0.0138
+CIC-2018  dirichlet-a0.1            0.0035            0.0040           0.0088           0.0111           0.0091           0.0115              0.0527              0.0600
+          dirichlet-a0.5            0.0024            0.0040           0.0063           0.0111           0.0066           0.0115              0.0407              0.0600
+          dirichlet-a1              0.0013            0.0040           0.0041           0.0111           0.0044           0.0115              0.0212              0.0600
+          iid                       0.0016            0.0040           0.0049           0.0111           0.0051           0.0115              0.0219              0.0600
+ToN-IoT   dirichlet-a0.1            0.0010            0.0014           0.0032           0.0046           0.0037           0.0053              0.0138              0.0076
+          dirichlet-a0.5            0.0005            0.0014           0.0018           0.0046           0.0023           0.0053              0.0032              0.0076
+          dirichlet-a1              0.0005            0.0014           0.0016           0.0046           0.0020           0.0053              0.0033              0.0076
+          iid                       0.0008            0.0014           0.0024           0.0046           0.0028           0.0053              0.0046              0.0076
+UNSW-NB15 dirichlet-a0.1            0.0014            0.0052           0.0044           0.0152           0.0048           0.0158              0.0123              0.0867
+          dirichlet-a0.5            0.0012            0.0052           0.0038           0.0152           0.0041           0.0158              0.0125              0.0867
+          dirichlet-a1              0.0010            0.0052           0.0036           0.0152           0.0039           0.0158              0.0141              0.0867
+          iid                       0.0011            0.0052           0.0043           0.0152           0.0045           0.0158              0.0212              0.0867
+
+Merged scaler more accurate than pooled (mean rank error) in 76/80 runs
+Feature with the largest mean rank error of the merged scaler (runs):
+merged_worst_feature_name
+SHORTEST_FLOW_PKT            12
+LONGEST_FLOW_PKT              7
+DNS_TTL_ANSWER                7
+NUM_PKTS_UP_TO_128_BYTES      7
+SRC_TO_DST_AVG_THROUGHPUT     7
+
+Federated-scaler global model on the test split through another scaler, mean over seeds:
+                          MCC_merged  MCC_via_pooled  MCC_via_exact  ROC_AUC_merged  ROC_AUC_via_exact
+dataset   partition                                                                                   
+BoT-IoT   dirichlet-a0.1       0.814           0.812          0.814           0.983              0.983
+          dirichlet-a0.5       0.934           0.934          0.935           0.989              0.989
+          dirichlet-a1         0.808           0.803          0.809           0.990              0.989
+          iid                  0.710           0.713          0.713           0.989              0.989
+CIC-2018  dirichlet-a0.1       0.856           0.856          0.856           0.944              0.944
+          dirichlet-a0.5       0.865           0.865          0.865           0.961              0.961
+          dirichlet-a1         0.867           0.867          0.867           0.963              0.963
+          iid                  0.867           0.867          0.867           0.964              0.964
+ToN-IoT   dirichlet-a0.1       0.609           0.616          0.612           0.895              0.896
+          dirichlet-a0.5       0.701           0.700          0.702           0.934              0.934
+          dirichlet-a1         0.752           0.754          0.753           0.954              0.954
+          iid                  0.770           0.769          0.770           0.954              0.954
+UNSW-NB15 dirichlet-a0.1       0.992           0.993          0.992           1.000              1.000
+          dirichlet-a0.5       0.999           0.991          0.991           1.000              1.000
+          dirichlet-a1         0.999           0.997          0.996           1.000              1.000
+          iid                  0.999           0.999          0.999           1.000              1.000
+
+MCC via pooled minus merged: mean -0.0003, largest |diff| 0.0400; via exact minus merged: mean -0.0002, largest |diff| 0.0399
